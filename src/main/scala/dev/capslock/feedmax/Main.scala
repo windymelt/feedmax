@@ -6,12 +6,13 @@ import dev.capslock.feedmax.infra.Fetcher.fetchFeed
 
 object Main extends ZIOAppDefault:
   def run = for
-    _    <- printLine("FeedMax")
-    conf <- feedMaxConfig
-    feeds <- app.Fetch
-      .batchFetch(conf.feeds)
+    _       <- printLine("FeedMax")
+    conf    <- feedMaxConfig
+    feeds   <- app.Fetch.batchFetch(conf.feeds)
+    okFeeds <- app.Detect.filterSuccessfulFeeds(feeds)
     _ <- ZIO.collectAll(
-      feeds.map(f => f.fold(_ => ???, f => f.items.head)).map(i => printLine(i)),
+      okFeeds
+        .map(f => printLine(f.items.head.title)),
     )
   yield ()
 end Main
