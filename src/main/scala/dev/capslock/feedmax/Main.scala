@@ -8,13 +8,10 @@ object Main extends ZIOAppDefault:
   def run = for
     _    <- printLine("FeedMax")
     conf <- feedMaxConfig
-    _ <- fetchFeed(
-      FetchRequest(
-        conf.feeds.head.toString(),
-      ),
+    feeds <- app.Fetch
+      .batchFetch(conf.feeds)
+    _ <- ZIO.collectAll(
+      feeds.map(f => f.fold(_ => ???, f => f.items.head)).map(i => printLine(i)),
     )
-      .provide(zio.http.Client.default)
-      .map(f => f.fold(_ => ???, f => f.items.head))
-      .debug
   yield ()
 end Main
