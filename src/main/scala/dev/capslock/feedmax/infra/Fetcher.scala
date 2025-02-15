@@ -2,7 +2,7 @@ package dev.capslock.feedmax.infra
 
 import zio.*
 import zio.http.*
-import dev.capslock.feedmax.FetchRequest
+import dev.capslock.feedmax.domain.FetchRequest
 
 object Fetcher:
   // TODO: keep conn using stream client to avoid reconnecting same host

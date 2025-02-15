@@ -6,6 +6,7 @@ import dev.capslock.rss4s.Feed
 import dev.capslock.rss4s.ParseFeedError
 import infra.Fetcher
 import zio.*
+import domain.FetchRequest
 
 object Fetch:
   def batchFetch(
