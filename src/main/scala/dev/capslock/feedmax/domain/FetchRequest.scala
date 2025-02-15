@@ -1,3 +1,9 @@
 package dev.capslock.feedmax.domain
 
-final case class FetchRequest(url: String)
+import java.time.OffsetDateTime
+
+final case class FetchRequest(
+    url: String,
+    lastModified: Option[OffsetDateTime] = None,
+)
+// TODO: etag?
