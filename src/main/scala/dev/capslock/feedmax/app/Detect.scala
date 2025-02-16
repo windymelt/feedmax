@@ -6,6 +6,7 @@ import dev.capslock.rss4s.ParseFeedError
 import zio.*
 import dev.capslock.feedmax.domain.NotifiableInfos
 import dev.capslock.feedmax.infra.Fetcher.Result
+import dev.capslock.feedmax.domain.repo.StateRepository
 
 object Detect:
   def filterSuccessfulFeeds(
@@ -15,7 +16,6 @@ object Detect:
       .collect { case Result.Fetched(feedEither, lastModified, url) =>
         feedEither
       // Ignore unmodified feeds
-      // TODO: filter by last fetched (not last modified)
       }
       .partition(_.isRight)
 
@@ -32,7 +32,22 @@ object Detect:
 
   def detectUnnotifiedItems(
       feeds: Seq[Feed],
-  ): ZIO[Any, Nothing, Seq[NotifiableInfos]] =
-    // TODO: implement this
-    ZIO.succeed(feeds.map(infra.Feed.feedToNotifiableInfos))
+  ): ZIO[StateRepository, Throwable, Seq[NotifiableInfos]] = for
+    stateRepo <- ZIO.service[StateRepository]
+    state     <- stateRepo.loadOrCreateState()
+    unnotified = feeds
+      .map(infra.Feed.feedToNotifiableInfos)
+      .flatMap { infos =>
+        val lastNotified =
+          state.lastNotified.getOrElse(java.time.OffsetDateTime.MIN)
+        val newInfos = infos.infos
+          .filter(
+            _.pubDate
+              .getOrElse(java.time.OffsetDateTime.MAX) // TODO: bloom filter
+              .isAfter(lastNotified),
+          )
+        if newInfos.nonEmpty then Seq(infos.copy(infos = newInfos))
+        else Seq.empty
+      }
+  yield unnotified
 end Detect

@@ -15,6 +15,7 @@ trait StateRepository:
 case class State(
     lastFetched: Option[java.time.OffsetDateTime] = None,
     lastModifiedPerFeed: Map[String, java.time.OffsetDateTime] = Map.empty,
+    lastNotified: Option[java.time.OffsetDateTime] = None,
 )
 object State:
   implicit val decoder: JsonDecoder[State] = DeriveJsonDecoder.gen[State]

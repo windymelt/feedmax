@@ -11,9 +11,13 @@ import dev.capslock.feedmax.infra.Fetcher.Result
 import dev.capslock.feedmax.domain.repo.StateRepository
 
 object Fetch:
+  case class FetchResult(
+      feeds: Seq[Result],
+      lastFetched: java.time.OffsetDateTime,
+  )
   def batchFetch(
       uris: Seq[URI],
-  ): ZIO[StateRepository, Throwable, Seq[Result]] =
+  ): ZIO[StateRepository, Throwable, FetchResult] =
     // TODO: group same origin
     for
       stateRepo <- ZIO.service[StateRepository]
@@ -36,5 +40,5 @@ object Fetch:
           }.toMap,
         ),
       )
-    yield result
+    yield FetchResult(result, fetchedAt)
 end Fetch
