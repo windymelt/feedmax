@@ -11,6 +11,7 @@ lazy val root = project
     libraryDependencies += "dev.zio"      %% "zio-config"          % "4.0.3",
     libraryDependencies += "dev.zio"      %% "zio-config-typesafe" % "4.0.3",
     libraryDependencies += "dev.zio"      %% "zio-http"            % "3.0.1",
+    libraryDependencies += "dev.zio"      %% "zio-json"            % "0.7.21",
     libraryDependencies += "dev.capslock" %% "rss4s"               % "0.0.1",
     libraryDependencies += "org.scalameta" %% "munit" % "1.0.0" % Test,
   )

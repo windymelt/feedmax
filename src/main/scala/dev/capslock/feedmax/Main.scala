@@ -6,10 +6,10 @@ import dev.capslock.feedmax.infra.Fetcher.fetchFeed
 
 object Main extends ZIOAppDefault:
   def run = for
-    _          <- printLine("FeedMax")
-    conf       <- feedMaxConfig
-    feeds      <- app.Fetch.batchFetch(conf.feeds)
-    okFeeds    <- app.Detect.filterSuccessfulFeeds(feeds)
+    _       <- printLine("FeedMax")
+    conf    <- feedMaxConfig
+    feeds   <- app.Fetch.batchFetch(conf.feeds).provide(infra.FileState.layer)
+    okFeeds <- app.Detect.filterSuccessfulFeeds(feeds)
     unnotified <- app.Detect.detectUnnotifiedItems(okFeeds)
     _ <- ZIO.collectAll(
       unnotified

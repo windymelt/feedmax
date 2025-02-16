@@ -26,6 +26,7 @@ object Fetcher:
         .debug
       result <- handleResult(req, resp)
     yield result
+    end for
   end fetchFeed
 
   private def clientWithCache(
@@ -33,7 +34,14 @@ object Fetcher:
       lastModified: Option[java.time.OffsetDateTime],
   ) = lastModified match
     case Some(lm) =>
-      cli.addHeader(Header.IfModifiedSince(lm.toZonedDateTime()))
+      val truncated = lm
+        .toZonedDateTime()
+        .truncatedTo(
+          java.time.temporal.ChronoUnit.SECONDS,
+        )
+      // TODO: If-Modified-Since per feed. some server requires exactly same time as response's Last-Modified.
+      val header = Header.IfModifiedSince(truncated)
+      cli.addHeader(header)
     case None =>
       cli
 

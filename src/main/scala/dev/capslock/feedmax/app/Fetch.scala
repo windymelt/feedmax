@@ -8,18 +8,26 @@ import infra.Fetcher
 import zio.*
 import domain.FetchRequest
 import dev.capslock.feedmax.infra.Fetcher.Result
+import dev.capslock.feedmax.domain.repo.StateRepository
 
 object Fetch:
   def batchFetch(
       uris: Seq[URI],
-  ): ZIO[Any, Throwable, Seq[Result]] =
+  ): ZIO[StateRepository, Throwable, Seq[Result]] =
     // TODO: group same origin
-    ZIO.collectAllPar(uris.map { uri =>
-      val fetchRequest = FetchRequest(
-        uri.toString,
-        lastModified =
-          Some(java.time.OffsetDateTime.parse("2025-02-14T00:30:44Z")), // TODO
+    for
+      stateRepo <- ZIO.service[StateRepository]
+      state     <- stateRepo.loadOrCreateState()
+      fetchedAt = java.time.OffsetDateTime.now()
+      result <- ZIO.collectAllPar(uris.map { uri =>
+        val fetchRequest = FetchRequest(
+          uri.toString,
+          lastModified = state.lastFetched,
+        )
+        Fetcher.fetchFeed(fetchRequest).provide(zio.http.Client.default)
+      })
+      _ <- stateRepo.saveState(
+        state.copy(lastFetched = Some(fetchedAt)),
       )
-      Fetcher.fetchFeed(fetchRequest).provide(zio.http.Client.default)
-    })
+    yield result
 end Fetch
