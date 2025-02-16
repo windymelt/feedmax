@@ -7,7 +7,11 @@ import dev.capslock.rss4s.ParseFeedError
 
 object Fetcher:
   enum Result:
-    case Fetched(result: Either[ParseFeedError, dev.capslock.rss4s.Feed])
+    case Fetched(
+        result: Either[ParseFeedError, dev.capslock.rss4s.Feed],
+        lastModified: Option[java.time.OffsetDateTime],
+        url: String,
+    )
     case NotModified(url: String)
 
   // TODO: keep conn using stream client to avoid reconnecting same host
@@ -54,5 +58,11 @@ object Fetcher:
         ZIO.succeed(Result.NotModified(req.url.toString))
       case _ =>
         for body <- resp.body.asString
-        yield Result.Fetched(dev.capslock.rss4s.parseFeed(body))
+        yield Result.Fetched(
+          dev.capslock.rss4s.parseFeed(body),
+          lastModified = resp
+            .header(Header.LastModified)
+            .map(lm => lm.value.toOffsetDateTime()),
+          url = req.url.toString,
+        )
 end Fetcher

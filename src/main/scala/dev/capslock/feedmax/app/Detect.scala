@@ -12,9 +12,10 @@ object Detect:
       feeds: Seq[Result],
   ): ZIO[Any, java.io.IOException, Seq[Feed]] = // TODO: log, defer error
     val (successfulFeeds, errors) = feeds
-      .collect { case Result.Fetched(feedEither) =>
+      .collect { case Result.Fetched(feedEither, lastModified, url) =>
         feedEither
       // Ignore unmodified feeds
+      // TODO: filter by last fetched (not last modified)
       }
       .partition(_.isRight)
 

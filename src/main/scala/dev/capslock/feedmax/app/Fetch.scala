@@ -22,12 +22,19 @@ object Fetch:
       result <- ZIO.collectAllPar(uris.map { uri =>
         val fetchRequest = FetchRequest(
           uri.toString,
-          lastModified = state.lastFetched,
+          lastModified = state.lastModifiedPerFeed.get(uri.toString),
         )
         Fetcher.fetchFeed(fetchRequest).provide(zio.http.Client.default)
       })
       _ <- stateRepo.saveState(
-        state.copy(lastFetched = Some(fetchedAt)),
+        state.copy(
+          lastFetched = Some(fetchedAt),
+          lastModifiedPerFeed = state.lastModifiedPerFeed ++ result.flatMap {
+            case Result.Fetched(_, lastModified, url) =>
+              lastModified.map(url -> _)
+            case _ => None
+          }.toMap,
+        ),
       )
     yield result
 end Fetch
