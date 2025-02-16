@@ -13,6 +13,6 @@ object Main extends ZIOAppDefault:
     feeds      <- app.Fetch.batchFetch(conf.feeds)
     okFeeds    <- app.Detect.filterSuccessfulFeeds(feeds.feeds)
     unnotified <- app.Detect.detectUnnotifiedItems(okFeeds)
-    _          <- app.Notify.notify(unnotified)
+    _          <- app.Notify.notify(unnotified) // TODO: webhook notifier
   yield ()
 end Main
