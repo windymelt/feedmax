@@ -5,7 +5,11 @@ import zio.Console.*
 import dev.capslock.feedmax.infra.Fetcher.fetchFeed
 
 object Main extends ZIOAppDefault:
-  def run = program.provide(infra.FileState.layer)
+  def run =
+    program.provide(
+      infra.FileState.layer,
+      infra.notifier.StdoutPlainNotifier.layer,
+    )
 
   val program = for
     _          <- printLine("FeedMax")

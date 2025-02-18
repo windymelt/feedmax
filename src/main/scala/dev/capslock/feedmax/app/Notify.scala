@@ -3,19 +3,21 @@ package dev.capslock.feedmax.app
 import dev.capslock.feedmax.domain.NotifiableInfos
 import zio.*
 import dev.capslock.feedmax.domain.repo.StateRepository
+import dev.capslock.feedmax.domain.repo.Notifier
 
 object Notify:
   def notify(
       notifiableInfosList: Seq[NotifiableInfos],
-  ): ZIO[StateRepository, Throwable, Unit] =
+  ): ZIO[StateRepository & Notifier, Throwable, Unit] =
     val infos = notifiableInfosList.flatMap(_.infos)
     val string =
       infos.map(_.title).mkString("\n")
     if string.isEmpty then ZIO.unit
     else
       for
-        _         <- zio.Console.printLine(string) // TODO; inject notifier
+        notifier  <- ZIO.service[Notifier]
         stateRepo <- ZIO.service[StateRepository]
+        _         <- notifier.notify(notifiableInfosList)
         state     <- stateRepo.loadOrCreateState()
         _ <- stateRepo.saveState(
           state.copy(
