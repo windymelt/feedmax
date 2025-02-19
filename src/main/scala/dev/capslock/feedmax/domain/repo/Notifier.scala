@@ -7,4 +7,4 @@ import java.io.IOException
 trait Notifier:
   def notify(
       notifications: Seq[NotifiableInfos],
-  ): ZIO[Any, IOException, Unit]
+  ): ZIO[Any, Throwable, Unit]

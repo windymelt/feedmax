@@ -9,6 +9,7 @@ import zio.*
 import domain.FetchRequest
 import dev.capslock.feedmax.infra.Fetcher.Result
 import dev.capslock.feedmax.domain.repo.StateRepository
+import zio.http.ZClient
 
 object Fetch:
   case class FetchResult(
@@ -17,7 +18,18 @@ object Fetch:
   )
   def batchFetch(
       uris: Seq[URI],
-  ): ZIO[StateRepository, Throwable, FetchResult] =
+  ): ZIO[
+    StateRepository &
+      ZClient[
+        Any,
+        Scope,
+        zio.http.Body,
+        Throwable,
+        zio.http.Response,
+      ],
+    Throwable,
+    FetchResult,
+  ] =
     // TODO: group same origin
     for
       stateRepo <- ZIO.service[StateRepository]
@@ -28,7 +40,7 @@ object Fetch:
           uri.toString,
           lastModified = state.lastModifiedPerFeed.get(uri.toString),
         )
-        Fetcher.fetchFeed(fetchRequest).provide(zio.http.Client.default)
+        Fetcher.fetchFeed(fetchRequest)
       })
       _ <- stateRepo.saveState(
         state.copy(

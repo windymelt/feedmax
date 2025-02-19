@@ -17,6 +17,7 @@ case class State(
     lastModifiedPerFeed: Map[String, java.time.OffsetDateTime] = Map.empty,
     lastNotified: Option[java.time.OffsetDateTime] = None,
 )
+// TODO: should move to infra
 object State:
   implicit val decoder: JsonDecoder[State] = DeriveJsonDecoder.gen[State]
   implicit val encoder: JsonEncoder[State] = DeriveJsonEncoder.gen[State]

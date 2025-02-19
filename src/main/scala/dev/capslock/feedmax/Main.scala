@@ -9,6 +9,7 @@ object Main extends ZIOAppDefault:
     program.provide(
       infra.FileState.layer,
       infra.notifier.StdoutPlainNotifier.layer,
+      zio.http.Client.default,
     )
 
   val program = for
