@@ -1,0 +1,4 @@
+feeds: [
+    "https://example.com/feed",
+    "https://another-example.com/feed"
+]
