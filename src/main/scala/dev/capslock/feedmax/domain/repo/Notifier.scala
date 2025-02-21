@@ -5,6 +5,11 @@ import dev.capslock.feedmax.domain.NotifiableInfos
 import java.io.IOException
 
 trait Notifier:
+  def notify(notifications: Seq[NotifiableInfos]): IO[Throwable, Unit]
+
+object Notifier:
   def notify(
       notifications: Seq[NotifiableInfos],
-  ): ZIO[Any, Throwable, Unit]
+  ): ZIO[Notifier, Throwable, Unit] =
+    ZIO.serviceWithZIO[Notifier](_.notify(notifications))
+end Notifier
