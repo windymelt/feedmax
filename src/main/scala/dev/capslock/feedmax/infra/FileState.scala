@@ -10,6 +10,9 @@ import java.nio.file.{Files, Paths}
 import java.nio.charset.StandardCharsets
 
 class FileState extends StateRepository:
+  given JsonDecoder[State] = DeriveJsonDecoder.gen[State]
+  given JsonEncoder[State] = DeriveJsonEncoder.gen[State]
+
   def loadState: IO[Throwable, State] =
     ZIO
       .fromTry(
