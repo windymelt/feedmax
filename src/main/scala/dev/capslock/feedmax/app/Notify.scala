@@ -15,10 +15,9 @@ object Notify:
     if string.isEmpty then ZIO.unit
     else
       for
-        notifier  <- ZIO.service[Notifier]
-        stateRepo <- ZIO.service[StateRepository]
-        _         <- notifier.notify(notifiableInfosList)
-        state     <- StateRepository.loadOrCreateState()
+        notifier <- ZIO.service[Notifier]
+        _        <- notifier.notify(notifiableInfosList)
+        state    <- StateRepository.loadOrCreateState()
         _ <- StateRepository.saveState(
           state.copy(
             lastNotified = Some(
