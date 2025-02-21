@@ -2,3 +2,12 @@ feeds: [
     "https://example.com/feed",
     "https://another-example.com/feed"
 ]
+
+notifier: {
+    type: "webhook"  # or "stdout"
+    webhook: {
+        url: "https://webhook.example.com/endpoint"
+        # Optional: Include bearer token for authentication
+        # bearerToken: "your-bearer-token-here"
+    }
+}

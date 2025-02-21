@@ -1,7 +1,7 @@
 package dev.capslock.feedmax.infra
 
 import dev.capslock.feedmax.domain.repo.ConfigRepository
-import dev.capslock.feedmax.FeedMaxConfig
+import dev.capslock.feedmax.{FeedMaxConfig, NotifierConfig, WebHookConfig}
 import zio.*
 import zio.config.*
 import zio.Config.*
@@ -14,8 +14,22 @@ class FileConfig extends ConfigRepository:
 
   // can be auto generated using magnoria, but not doing it here because it's a bit too much
   // TODO: validate URI as HTTP/HTTPS
+  private val webhookConfigDescriptor: Config[WebHookConfig] =
+    (uri("url") ?? "Webhook URL" zip
+      secret(
+        "bearerToken",
+      ).optional ?? "Bearer token for webhook authentication")
+      .to[WebHookConfig]
+
+  private val notifierConfigDescriptor: Config[NotifierConfig] =
+    (string("type") ?? "Notifier type (stdout or webhook)" zip
+      webhookConfigDescriptor.optional.nested("webhook"))
+      .to[NotifierConfig]
+
   private val configDescriptor: Config[FeedMaxConfig] =
-    vectorOf("feeds", (uri ?? "Feed URL")).to[FeedMaxConfig]
+    (vectorOf("feeds", uri ?? "Feed URL") zip
+      notifierConfigDescriptor.nested("notifier"))
+      .to[FeedMaxConfig]
 
   override def getConfig: IO[Throwable, FeedMaxConfig] =
     ZIO.attempt {
