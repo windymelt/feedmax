@@ -7,10 +7,19 @@ import zio.json.JsonEncoder
 import zio.json.DeriveJsonEncoder
 
 trait StateRepository:
-  def loadOrCreateState(): ZIO[Any, Throwable, State] =
+  def loadState: IO[Throwable, State]
+  def saveState(state: State): IO[Throwable, State]
+
+object StateRepository:
+  def loadState(): ZIO[StateRepository, Throwable, State] =
+    ZIO.serviceWithZIO[StateRepository](_.loadState)
+
+  def saveState(state: State): ZIO[StateRepository, Throwable, State] =
+    ZIO.serviceWithZIO[StateRepository](_.saveState(state))
+
+  def loadOrCreateState(): ZIO[StateRepository, Throwable, State] =
     loadState() <> saveState(State())
-  def loadState(): ZIO[Any, Throwable, State]
-  def saveState(state: State): ZIO[Any, Throwable, State]
+end StateRepository
 
 case class State(
     lastFetched: Option[java.time.OffsetDateTime] = None,

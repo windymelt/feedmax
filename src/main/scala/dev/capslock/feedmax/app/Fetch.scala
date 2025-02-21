@@ -32,8 +32,7 @@ object Fetch:
   ] =
     // TODO: group same origin
     for
-      stateRepo <- ZIO.service[StateRepository]
-      state     <- stateRepo.loadOrCreateState()
+      state <- StateRepository.loadOrCreateState()
       fetchedAt = java.time.OffsetDateTime.now()
       result <- ZIO.collectAllPar(uris.map { uri =>
         val fetchRequest = FetchRequest(
@@ -42,7 +41,7 @@ object Fetch:
         )
         Fetcher.fetchFeed(fetchRequest)
       })
-      _ <- stateRepo.saveState(
+      _ <- StateRepository.saveState(
         state.copy(
           lastFetched = Some(fetchedAt),
           lastModifiedPerFeed = state.lastModifiedPerFeed ++ result.flatMap {

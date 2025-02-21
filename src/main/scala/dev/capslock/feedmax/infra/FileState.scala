@@ -6,9 +6,11 @@ import dev.capslock.feedmax.domain.repo.State
 import zio.*
 import zio.json.*
 import scala.util.Try
+import java.nio.file.{Files, Paths}
+import java.nio.charset.StandardCharsets
 
-object FileState extends StateRepository:
-  def loadState(): ZIO[Any, Throwable, State] =
+class FileState extends StateRepository:
+  def loadState: IO[Throwable, State] =
     ZIO
       .fromTry(
         Try(
@@ -23,9 +25,7 @@ object FileState extends StateRepository:
       .absolve
   end loadState
 
-  def saveState(state: State): ZIO[Any, Throwable, State] =
-    import java.nio.file.{Paths, Files}
-    import java.nio.charset.StandardCharsets
+  def saveState(state: State): IO[Throwable, State] =
     ZIO
       .succeed(
         Files.write(
@@ -35,7 +35,8 @@ object FileState extends StateRepository:
       )
       .as(state)
   end saveState
+end FileState
 
-  val layer: ZLayer[Any, Nothing, StateRepository] =
-    ZLayer.succeed(this)
+object FileState:
+  val layer: ULayer[StateRepository] = ZLayer.succeed(new FileState)
 end FileState

@@ -33,8 +33,7 @@ object Detect:
   def detectUnnotifiedItems(
       feeds: Seq[Feed],
   ): ZIO[StateRepository, Throwable, Seq[NotifiableInfos]] = for
-    stateRepo <- ZIO.service[StateRepository]
-    state     <- stateRepo.loadOrCreateState()
+    state <- StateRepository.loadOrCreateState()
     unnotified = feeds
       .map(infra.Feed.feedToNotifiableInfos)
       .flatMap { infos =>

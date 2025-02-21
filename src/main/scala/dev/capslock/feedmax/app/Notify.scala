@@ -18,8 +18,8 @@ object Notify:
         notifier  <- ZIO.service[Notifier]
         stateRepo <- ZIO.service[StateRepository]
         _         <- notifier.notify(notifiableInfosList)
-        state     <- stateRepo.loadOrCreateState()
-        _ <- stateRepo.saveState(
+        state     <- StateRepository.loadOrCreateState()
+        _ <- StateRepository.saveState(
           state.copy(
             lastNotified = Some(
               java.time.OffsetDateTime.now(),
