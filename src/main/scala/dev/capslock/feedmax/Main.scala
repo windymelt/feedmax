@@ -4,6 +4,7 @@ import zio.*
 import zio.Console.*
 import dev.capslock.feedmax.infra.Fetcher.fetchFeed
 import dev.capslock.feedmax.domain.repo.ConfigRepository
+import dev.capslock.feedmax.web.{GraphQL, HelloWorld}
 
 object Main extends ZIOAppDefault:
   private def notifierLayer = for
@@ -16,13 +17,21 @@ object Main extends ZIOAppDefault:
   yield notifier
 
   def run = for
-    layer <- notifierLayer.provide(infra.FileConfig.layer)
+    layer         <- notifierLayer.provide(infra.FileConfig.layer)
+    graphqlRoutes <- GraphQL.routes.orDie
+    server <- zio.http.Server
+      .serve(HelloWorld.routes ++ graphqlRoutes)
+      .provide(
+        zio.http.Server.default,
+      )
+      .fork
     _ <- program.provide(
       infra.FileState.layer,
       infra.FileConfig.layer,
       layer,
       zio.http.Client.default,
     )
+    _ <- server.join
   yield ()
 
   val program = for
